@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.lj.redwine.dao.EvaluationDao" >
+  <resultMap id="EvaluationResultMap" type="com.lj.redwine.pojo.Evaluation" >
+    <id column="evaluation_id" property="evaluation_id" jdbcType="INTEGER" />
+    <result column="content" property="content" jdbcType="VARCHAR" />
+    <result column="grade" property="grade" jdbcType="REAL" />
+    <result property="evaluation_date" column="evaluation_date" jdbcType="DATE"/> 
+    <result column="user_id" property="user_id" jdbcType="INTEGER" />
+    <result column="redwine_id" property="redwine_id" jdbcType="INTEGER" />
+    <!-- 表示一的一方 -->  
+    <association property="user" javaType="com.lj.redwine.pojo.User">  
+    <id property="user_id" column="user_id"/>  
+    	<result property="username" column="username"/>
+    	<result property="password" column="password"/>  
+    	<result property="avatar" column="avatar"/>  
+    	<result property="telephone" column="telephone"/>    
+    </association>  
+    <association property="redwine" javaType="com.lj.redwine.pojo.Redwine">  
+    	<id property="redwine_id" column="redwine_id"/>  
+    	<result column="price" property="price" />
+    	<result column="redwine_name" property="redwine_name" />
+    	<result column="description" property="description" />
+    	<result column="introduction" property="introduction" />
+    	<result column="origin" property="origin" />
+    	<result column="vintage" property="vintage" />
+    	<result column="alcohol" property="alcohol" />
+    	<result column="capacity" property="capacity" />
+    	<result column="picture" property="picture" />
+    	<result column="register_date" property="register_date" />
+   		<result column="sales" property="sales" />  
+   		<result column="redwine_type_id" property="redwine_type_id" />
+    </association>
+  </resultMap>
+  
+  	<!-- 查询所有我的收藏 -->
+ 	<select id="findAllEvaluation" resultType="com.lj.redwine.pojo.Evaluation" resultMap="EvaluationResultMap">
+ 		select * from evaluation e
+ 		inner join user u on e.user_id = u.user_id
+ 		inner join redwine r on e.redwine_id = r.redwine_id
+ 	</select>
+  
+  	<!-- 根据评价id查询用户 -->  
+    <select id="queryUserByEvaluationId" parameterType="int" resultMap="EvaluationResultMap"> 
+    	select * from user u,evaluation e where u.user_id=e.user_id and e.user_id=#{id}     
+    </select>  
+    
+    <!-- 根据评价id查询红酒 -->  
+    <select id="queryRedWineByEvaluationId" parameterType="int" resultMap="EvaluationResultMap"> 
+    	select * from redwine r,evaluation e where r.redwine_id=e.redwine_id and e.redwine_id=#{id}     
+    </select>
+  	
+	<!-- 根据id查询评价(内查询)-->
+  	<select id="queryEvaluationById" parameterType="int" resultType="com.lj.redwine.pojo.Evaluation" resultMap="EvaluationResultMap">
+		select * from evaluation e
+ 		inner join user u on e.user_id = u.user_id
+ 		inner join redwine r on e.redwine_id = r.redwine_id
+ 		where e.evaluation_id = #{id}
+  	</select>
+  	
+	<!-- 添加评价 -->
+  	<insert id="addEvaluation" parameterType="com.lj.redwine.pojo.Evaluation" useGeneratedKeys="true" keyProperty="id">
+    	insert into evaluation (content, grade, evaluation_date, user_id, redwine_id) values (#{content}, #{grade}, #{evaluation_date},
+    	#{user_id}, #{redwine_id})
+	</insert>
+  	
+  	<!-- 删除评价-->
+  	<delete id="deleteEvaluation" parameterType="int">
+        delete from evaluation where evaluation_id=#{id}
+    </delete>
+    
+    <!-- 根据红酒id查询评论 -->
+    <select id="queryEvaluationByRedwineId" resultType="com.lj.redwine.pojo.Evaluation" parameterType="int" resultMap="EvaluationResultMap"> 
+    	select * from 
+    	(evaluation e inner join user u on e.user_id = u.user_id)
+    	where e.redwine_id = #{id}
+    </select>
+    
+    <!-- 根据用户id查询评论 -->
+    <select id="queryEvaluationByUserId" resultType="com.lj.redwine.pojo.Evaluation" parameterType="int" resultMap="EvaluationResultMap"> 
+    	select * from 
+    	(evaluation e inner join redwine r on e.redwine_id = r.redwine_id)
+    	where e.user_id = #{id}
+    </select>
+    
+</mapper>

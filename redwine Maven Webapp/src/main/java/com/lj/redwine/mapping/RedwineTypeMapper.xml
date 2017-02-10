@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.lj.redwine.dao.RedwineTypeDao" >
+  <resultMap id="RedwineTypeResultMap" type="com.lj.redwine.pojo.RedwineType" >
+    <id column="redwine_type_id" property="redwine_type_id" jdbcType="INTEGER" />
+    <result column="type_name" property="type_name" jdbcType="CHAR" />
+    <!-- 映射到一个集合  表示多的一方-->  
+    <collection property="redwineList" ofType="com.lj.redwine.pojo.Redwine">  
+    	<id property="redwine_id" column="redwine_id"/>  
+    	<result column="price" property="price" />
+    	<result column="redwine_name" property="redwine_name" />
+    	<result column="description" property="description" />
+    	<result column="introduction" property="introduction" />
+    	<result column="origin" property="origin" />
+    	<result column="vintage" property="vintage" />
+    	<result column="alcohol" property="alcohol" />
+    	<result column="capacity" property="capacity" />
+    	<result column="picture" property="picture" />
+    	<result column="register_date" property="register_date" />
+   		<result column="sales" property="sales" />  
+   		<result column="redwine_type_id" property="redwine_type_id" />
+    </collection>
+    
+  </resultMap>
+  
+  <!-- 根据红酒类型id查询红酒 -->
+  <select id="queryRedWineByRedWineTypeId" parameterType="int" resultMap="RedwineTypeResultMap">
+  	select * from redwine r,redwine_type rt where r.redwine_id=rt.redwine_id and rt.redwine_id=#{id}
+  </select>
+  
+  <!-- 添加红酒类型-->
+  <insert id="addRedwineType" parameterType="com.lj.redwine.pojo.RedwineType" useGeneratedKeys="true" keyProperty="id">
+  	insert into redwine_type (type_name) values (#{type_name})
+  </insert>
+  
+  <!-- 更新红酒类型 -->
+  <update id="updateRedwineType" parameterType="com.lj.redwine.pojo.RedwineType" >
+    update redwine_type
+    set type_name = #{type_name}
+    where redwine_type_id = #{redwine_type_id}
+  </update>
+  
+  <!-- 删除红酒类型 -->
+  <delete id="deleteRedwineType" parameterType="int">
+  	delete from redwine_type where redwine_type_id=#{id}
+  </delete>
+  
+  <!-- 根据id查询红酒类型 -->
+  <select id="queryRedwineTypeById" parameterType="int" resultType="com.lj.redwine.pojo.RedwineType" resultMap="RedwineTypeResultMap">
+  	select redwine_type.* from redwine_type where redwine_type.redwine_type_id=#{id}
+  </select>
+  	
+  	<!-- 查询所有红酒类型 -->
+ 	<select id="findAllRedWineType" resultType="com.lj.redwine.pojo.RedwineType" resultMap="RedwineTypeResultMap">
+ 		select redwine_type.* from redwine_type
+ 	</select>
+</mapper>

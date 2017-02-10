@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.lj.redwine.dao.OrderItemDao" >
+  <resultMap id="OrderItemResultMap" type="com.lj.redwine.pojo.OrderItem" >
+    <id column="order_item_id" property="order_item_id" jdbcType="INTEGER" />
+    <result column="quantity" property="quantity" jdbcType="INTEGER" />
+
+    <!-- 表示一的一方 --> 
+    <association property="redwine" javaType="com.lj.redwine.pojo.Redwine">  
+  		<id property="redwine_id" column="redwine_id"/>  
+		<result column="price" property="price" />
+		<result column="redwine_name" property="redwine_name" />
+		<result column="description" property="description" />
+		<result column="introduction" property="introduction" />
+		<result column="origin" property="origin" />
+		<result column="vintage" property="vintage" />
+		<result column="alcohol" property="alcohol" />
+		<result column="capacity" property="capacity" />
+		<result column="picture" property="picture" />
+		<result column="register_date" property="register_date" />
+		<result column="sales" property="sales" />  
+		<result column="redwine_type_id" property="redwine_type_id" />
+	</association> 
+	<association property="orders" javaType="com.lj.redwine.pojo.Orders">  
+  		<id property="order_id" column="order_id"/>  
+		<result column="order_time" property="order_time" />
+    	<result column="total_price" property="total_price" />
+    	<result column="order_status_id" property="order_status_id" />
+    	<result column="user_id" property="user_id" />	
+	</association> 
+  </resultMap>
+  
+  <!-- 根据子订单id查询红酒 -->  
+  <select id="queryRedWineByOrderItemId" parameterType="int" resultMap="OrderItemResultMap"> 
+  	select * from redwine r,order_item o where r.redwine_id=o.redwine_id and o.redwine_id=#{id}     
+  </select>
+  
+  <!-- 根据子订单id查询订单 -->
+  <select id="queryOrdersByOrderItemId" parameterType="int" resultMap="OrderItemResultMap"> 
+  	select * from orders o,order_item oi where o.order_id=oi.order_id and oi.order_id=#{id}     
+  </select>
+  
+  <!-- 添加子订单 -->
+  <insert id="addOrderItem" parameterType="com.lj.redwine.pojo.OrderItem" useGeneratedKeys="true" keyProperty="id">
+    insert into order_item (quantity, redwine_id,order_id) values (#{quantity}, #{redwine_id},#{order_id})
+  </insert>	
+  
+ 	<!--  根据订单id查询子订单 -->
+   	<select id="queryOrderItemByOrderId" parameterType="int" resultMap="OrderItemResultMap" resultType="com.lj.redwine.pojo.OrderItem"> 
+  		select * from order_item oi
+  		inner join redwine r on oi.redwine_id = r.redwine_id
+  		where order_id = #{id}
+  	</select>
+ 
+</mapper>

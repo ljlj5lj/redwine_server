@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.lj.redwine.dao.RedwineDao" >
+
+  <resultMap id="RedWineResultMap" type="com.lj.redwine.pojo.Redwine" >
+    <id column="redwine_id" property="redwine_id" jdbcType="INTEGER" />
+    <result column="price" property="price" jdbcType="REAL" />
+    <result column="redwine_name" property="redwine_name" jdbcType="VARCHAR" />
+    <result column="description" property="description" jdbcType="VARCHAR" />
+    <result column="introduction" property="introduction" jdbcType="VARCHAR" />
+    <result column="origin" property="origin" jdbcType="VARCHAR" />
+    <result column="vintage" property="vintage" jdbcType="INTEGER" />
+    <result column="alcohol" property="alcohol" jdbcType="REAL" />
+    <result column="capacity" property="capacity" jdbcType="INTEGER" />
+    <result column="picture" property="picture" jdbcType="VARCHAR" />
+    <result column="register_date" property="register_date" jdbcType="TIMESTAMP" />
+    <result column="sales" property="sales" jdbcType="INTEGER" />
+    
+    <!-- 表示一的一方 -->  
+    <association property="redwine_type" javaType="com.lj.redwine.pojo.RedwineType">  
+    	<id property="redwine_type_id" column="redwine_type_id" jdbcType="INTEGER"/>  
+    	<result property="type_name" column="type_name" jdbcType="CHAR"/>
+    </association>
+    
+    <!-- 映射到一个集合  表示多的一方-->  
+    <collection property="favoritesList" ofType="com.lj.redwine.pojo.Favorites">  
+    	<id property="favorites_id" column="favorites_id"/>  
+    </collection>  
+    
+    <collection property="shoppingCartList" ofType="com.lj.redwine.pojo.ShoppingCart">  
+    	<id property="shopping_cart_id" column="shopping_cart_id"/>  
+    </collection> 
+    
+    <collection property="evaluationList" ofType="com.lj.redwine.pojo.Evaluation">
+    	<id property="evaluation_id" column="evaluation_id"/>
+    	<result property="content" column="content"/>
+    	<result property="grade" column="grade"/>
+    	<result property="evaluation_date" column="evaluation_date"/> 
+    </collection>
+    <collection property="orderItemList" ofType="com.lj.redwine.pojo.OrderItem">
+    	<id property="order_item_id" column="order_item_id"/>
+    	<result property="quantity" column="quantity"/>
+    </collection>
+       
+  </resultMap>
+
+	<!-- 添加红酒 -->
+ 	<insert id="addRedWine" parameterType="com.lj.redwine.pojo.Redwine" useGeneratedKeys="true" keyProperty="id">
+		insert into redwine (price,redwine_name,description,introduction,origin,vintage,alcohol,capacity,picture,register_date,sales,redwine_type_id) values( 
+		#{price}, #{redwine_name}, #{description}, #{introduction}, #{origin}, #{vintage}, #{alcohol}, #{capacity}, #{picture}, #{register_date}, #{sales}, #{redwine_type_id}) 
+    </insert>
+    
+    <!-- 查询所有红酒 -->
+ 	<select id="findAllRedWine" resultType="com.lj.redwine.pojo.Redwine" resultMap="RedWineResultMap">
+ 		select redwine.*,redwine_type.* from (redwine inner join redwine_type on redwine.redwine_type_id = redwine_type.redwine_type_id)
+ 	</select>
+    
+	<!-- 根据id查询红酒(内查询) -->
+  	<select id="queryRedWineById" parameterType="int" resultType="com.lj.redwine.pojo.Redwine" resultMap="RedWineResultMap">
+  		select redwine.*,redwine_type.* from (redwine inner join redwine_type on redwine.redwine_type_id = redwine_type.redwine_type_id) where redwine.redwine_id=#{id}
+  	</select>
+  	
+  	<!-- 按类型查询红酒(内查询) -->
+  	<select id="queryRedWineByType" parameterType="map" resultType="com.lj.redwine.pojo.Redwine" resultMap="RedWineResultMap">
+  		select * from
+  		(redwine inner join redwine_type on redwine.redwine_type_id = redwine_type.redwine_type_id)
+  		where redwine.redwine_type_id = #{redwine_type_id}
+  		order by redwine.redwine_id limit #{id},4
+  	</select>
+  	
+  	<!-- 根据id查询红酒 -->
+  	<select id="searchRedWineById" parameterType="int" resultType="com.lj.redwine.pojo.Redwine" resultMap="RedWineResultMap">
+  		select redwine.* from redwine where redwine.redwine_id=#{id}
+  	</select>
+  	
+  	<!-- 更新红酒信息 -->
+  	<update id="updateRedWine" parameterType="com.lj.redwine.pojo.Redwine">
+		update redwine
+    	set price = #{price},
+    	redwine_name = #{redwine_name},
+      	description = #{description},
+      	introduction = #{introduction},
+     	origin = #{origin},
+      	vintage = #{vintage},
+      	alcohol = #{alcohol},
+      	capacity = #{capacity},
+      	sales = #{sales},
+      	redwine_type_id = #{redwine_type_id}
+      	where redwine_id=#{redwine_id}
+  	</update>
+  	
+  	<!-- 删除红酒 -->
+  	<delete id="deleteRedWine" parameterType="int">
+        delete from redwine where redwine_id=#{id}
+    </delete>
+    
+    <!-- 根据红酒id查询我的收藏 -->  
+    <select id="queryCollectionByRedWineId" parameterType="int" resultMap="RedWineResultMap"> 
+    	select * from redwine r,collection c where r.redwine_id=c.redwine_id and r.redwine_id=#{id}     
+    </select>
+    
+    <!-- 根据红酒id查询我的酒评 -->  
+    <select id="queryEvaluationByRedWineId" parameterType="int" resultMap="RedWineResultMap"> 
+    	select * from redwine r,evaluation e where r.redwine_id=e.redwine_id and r.redwine_id=#{id}     
+    </select>
+    
+    <!-- 根据红酒id查询子菜单 -->  
+    <select id="queryOrderItemByRedWineId" parameterType="int" resultMap="RedWineResultMap"> 
+    	select * from redwine r,order_item o where r.redwine_id=o.redwine_id and r.redwine_id=#{id}     
+    </select>
+    
+    <!-- 根据红酒id查询红酒类型 -->
+    <select id="queryRedWineTypeByRedWineId" parameterType="int" resultMap="RedWineResultMap">
+    	select * from redwine r,redwine_type rt where r.redwine_type_id=rt.redwine_type_id and r.redwine_type_id=#{id}
+    </select>
+    
+    <!-- 按照上架日期查询红酒 -->
+    <select id="queryRedwineOrderByTime" resultType="com.lj.redwine.pojo.Redwine" parameterType="int" resultMap="RedWineResultMap"> 
+    	select * from redwine order by register_date desc limit #{id},2
+    </select>
+    
+    <!-- 模糊查询红酒 -->
+    <select id="searchRedwineOrderById" parameterType="Map" resultMap="RedWineResultMap" resultType="com.lj.redwine.pojo.Redwine"> 
+    	select * from redwine r where r.redwine_name like "%"#{name}"%" order by r.redwine_id limit #{id},4
+    </select>
+    
+    <!-- 按照销量查询红酒 -->
+    <select id="queryRedwineOrderBySales" resultType="com.lj.redwine.pojo.Redwine" parameterType="int" resultMap="RedWineResultMap"> 
+    	select * from redwine r order by r.sales desc limit #{id},3
+    </select>
+</mapper>

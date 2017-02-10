@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.lj.redwine.dao.ShoppingCartDao" >
+
+  <resultMap id="ShoppingCartResultMap" type="com.lj.redwine.pojo.ShoppingCart" >
+    <id column="shopping_cart_id" property="shopping_cart_id" jdbcType="INTEGER" />
+    
+    <!-- 表示一的一方 -->  
+    <association property="user" javaType="com.lj.redwine.pojo.User">  
+    <id property="user_id" column="user_id"/>  
+    	<result property="username" column="username"/>
+    	<result property="password" column="password"/>  
+    	<result property="avatar" column="avatar"/>  
+    	<result property="telephone" column="telephone"/>    
+    </association>  
+    
+    <association property="redwine" javaType="com.lj.redwine.pojo.Redwine">  
+    	<id property="redwine_id" column="redwine_id"/>  
+    	<result column="price" property="price" />
+    	<result column="redwine_name" property="redwine_name" />
+    	<result column="description" property="description" />
+    	<result column="introduction" property="introduction" />
+    	<result column="origin" property="origin" />
+    	<result column="vintage" property="vintage" />
+    	<result column="alcohol" property="alcohol" />
+    	<result column="capacity" property="capacity" />
+    	<result column="picture" property="picture" />
+    	<result column="register_date" property="register_date" />
+   		<result column="sales" property="sales" />  
+   		<result column="redwine_type_id" property="redwine_type_id" />
+    </association>  
+  </resultMap>
+  
+   	<!-- 根据用户id查询购物车 -->
+ 	<select id="queryShoppingCartByUserId" resultType="com.lj.redwine.pojo.ShoppingCart" parameterType="int" resultMap="ShoppingCartResultMap"> 
+    	select * from 
+    	(shopping_cart s inner join redwine r on s.redwine_id = r.redwine_id)
+    	where s.user_id = #{id}
+    </select>
+    
+    <!-- 加入购物车 -->
+    <insert id="addShoppingCart" parameterType="com.lj.redwine.pojo.ShoppingCart" useGeneratedKeys="true" keyProperty="id">
+    	insert into shopping_cart (redwine_id, user_id) values (#{redwine_id}, #{user_id})
+  	</insert>
+  	
+  	<!-- 查询红酒在购物车是否存在 -->
+  	<select id="findShoppingCart" parameterType="map" resultType="com.lj.redwine.pojo.ShoppingCart">
+  		select shopping_cart_id from shopping_cart where user_id = #{user_id} and redwine_id = #{redwine_id} 
+  	</select>
+  	
+  	 <!-- 删除购物车中的红酒 -->
+  	<delete id="deleteShoppingCart" parameterType="int">
+        delete from shopping_cart where shopping_cart_id=#{id}
+    </delete>
+  
+ </mapper>

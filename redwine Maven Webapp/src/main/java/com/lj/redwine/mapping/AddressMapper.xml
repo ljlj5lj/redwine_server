@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.lj.redwine.dao.AddressDao" >
+  <resultMap id="AddressResultMap" type="com.lj.redwine.pojo.Address" >
+    <id column="address_id" property="address_id" jdbcType="INTEGER" />
+    <result column="consignee" property="consignee" jdbcType="VARCHAR" />
+    <result column="gender" property="gender" jdbcType="CHAR" />
+    <result column="consignee_phone" property="consignee_phone" jdbcType="VARCHAR" />
+    <result column="location_address" property="location_address" jdbcType="VARCHAR" />
+    <result column="detail_address" property="detail_address" jdbcType="VARCHAR" />
+    <result column="user_delete" property="user_delete" jdbcType="INTEGER" />
+    <!-- 表示一的一方 -->  
+    <association property="user" javaType="com.lj.redwine.pojo.User">  
+    <id property="user_id" column="user_id"/>  
+    	<result property="username" column="username"/>
+    	<result property="password" column="password"/>  
+    	<result property="avatar" column="avatar"/>  
+    	<result property="telephone" column="telephone"/>    
+    </association>  
+  </resultMap>
+  	<!-- 查询所有用户地址 -->
+ 	<select id="findAllAddress" resultType="com.lj.redwine.pojo.Address" resultMap="AddressResultMap">
+ 		select * from (address inner join user on address.user_id = user.user_id)
+ 	</select>
+  
+  	<!-- 根据地址id查询用户 -->  
+    <select id="queryUserByAddressId" parameterType="int" resultMap="AddressResultMap"> 
+    	select * from user u,address a where u.user_id=a.user_id and a.user_id=#{id}     
+    </select>  
+    
+    <!-- 添加地址 -->
+    <insert id="addAddress" parameterType="com.lj.redwine.pojo.Address" useGeneratedKeys="true" keyProperty="id">
+    	insert into address (consignee, gender, consignee_phone, location_address, detail_address, user_id, user_delete) values(
+    	#{consignee}, #{gender}, #{consignee_phone}, #{location_address}, #{detail_address}, #{user_id}, #{user_delete})
+  	</insert>
+  	
+  	<!-- 根据id查询地址 -->
+  	<select id="queryAddressById" parameterType="int" resultType="com.lj.redwine.pojo.Address">
+  		select * from address where address.address_id=#{id}
+  	</select>
+  	
+  	<!-- 更新地址信息 -->
+  	<update id="updateAddress" parameterType="com.lj.redwine.pojo.Address">
+  		update address
+    	set consignee = #{consignee},
+      	gender = #{gender},
+      	consignee_phone = #{consignee_phone},
+      	location_address = #{location_address},
+      	detail_address = #{detail_address}
+      	where address_id=#{address_id}
+  	</update>
+    
+   	<!--  用户删除地址 -->
+   	<update id="deleteAddress" parameterType="com.lj.redwine.pojo.Address">
+   		update address set user_delete = 1 where address_id=#{address_id}
+   	</update>
+    
+    <!-- 根据用户id查询地址 -->
+    <select id="queryAddressByUserId" resultType="com.lj.redwine.pojo.Address" parameterType="int" resultMap="AddressResultMap"> 
+    	select * from address a where a.user_id = #{id} and a.user_delete = 0
+    </select>
+</mapper>

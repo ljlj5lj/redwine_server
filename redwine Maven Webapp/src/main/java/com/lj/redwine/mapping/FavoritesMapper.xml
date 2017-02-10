@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.lj.redwine.dao.FavoritesDao" >
+
+  <resultMap id="FavoritesResultMap" type="com.lj.redwine.pojo.Favorites" >
+    <id column="favorites_id" property="favorites_id" jdbcType="INTEGER" />
+
+    <!-- 表示一的一方 -->  
+    <association property="user" javaType="com.lj.redwine.pojo.User">  
+    <id property="user_id" column="user_id"/>  
+    	<result property="username" column="username"/>
+    	<result property="password" column="password"/>  
+    	<result property="avatar" column="avatar"/>  
+    	<result property="telephone" column="telephone"/>    
+    </association>  
+    
+    <association property="redwine" javaType="com.lj.redwine.pojo.Redwine">  
+    	<id property="redwine_id" column="redwine_id"/>  
+    	<result column="price" property="price" />
+    	<result column="redwine_name" property="redwine_name" />
+    	<result column="description" property="description" />
+    	<result column="introduction" property="introduction" />
+    	<result column="origin" property="origin" />
+    	<result column="vintage" property="vintage" />
+    	<result column="alcohol" property="alcohol" />
+    	<result column="capacity" property="capacity" />
+    	<result column="picture" property="picture" />
+    	<result column="register_date" property="register_date" />
+   		<result column="sales" property="sales" />  
+   		<result column="redwine_type_id" property="redwine_type_id" />
+    </association>  
+  </resultMap>
+  
+  	<!-- 查询所有我的收藏 -->
+ 	<select id="findAllFavorites" resultType="com.lj.redwine.pojo.Favorites" resultMap="FavoritesResultMap">
+ 		select * from favorites f
+ 		inner join user u on f.user_id = u.user_id
+ 		inner join redwine r on f.redwine_id = r.redwine_id
+ 	</select>
+ 	
+ 	<!-- 查询红酒在我的收藏是否存在 -->
+  	<select id="findFavorites" parameterType="map" resultType="com.lj.redwine.pojo.Favorites">
+  		select favorites_id from favorites where redwine_id = #{redwine_id} and user_id = #{user_id}
+  	</select>
+ 	
+ 	<!-- 根据用户id查询我的收藏 -->
+ 	<select id="queryFavoritesByUserId" resultType="com.lj.redwine.pojo.Favorites" parameterType="int" resultMap="FavoritesResultMap"> 
+    	select * from 
+    	(favorites f inner join redwine r on f.redwine_id = r.redwine_id)
+    	where f.user_id = #{id}
+    </select>
+ 	
+  	<!-- 根据我的收藏id查询用户 -->
+    <select id="queryUserByFavoritesId" parameterType="int" resultMap="FavoritesResultMap"> 
+    	select * from user u,favorites f where u.user_id=f.user_id and f.user_id=#{id}     
+    </select>  
+    
+  	<!-- 根据我的收藏id查询红酒 -->  
+    <select id="queryFavoritesByRedWineId" parameterType="int" resultMap="FavoritesResultMap"> 
+    	select * from redwine r,favorites f where r.redwine_id=f.redwine_id and f.redwine_id=#{id}     
+    </select>
+    
+  	<!-- 添加我的收藏 -->
+    <insert id="addFavorites" parameterType="com.lj.redwine.pojo.Favorites" useGeneratedKeys="true" keyProperty="id">
+    	insert into favorites (redwine_id, user_id) values (#{redwine_id}, #{user_id})
+  	</insert>
+  	
+  	<!-- 删除我的收藏 -->
+  	<delete id="deleteFavorites" parameterType="int">
+        delete from favorites where favorites_id=#{id}
+    </delete>
+    
+    <!-- 根据id查询我的收藏 -->
+  	<select id="queryFavoritesById" parameterType="int" resultType="com.lj.redwine.pojo.Favorites">
+  		select * from favorites where favorites.favorites_id=#{id}
+  	</select>
+    
+</mapper>

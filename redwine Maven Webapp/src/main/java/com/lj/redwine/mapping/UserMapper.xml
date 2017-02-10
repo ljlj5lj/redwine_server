@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.lj.redwine.dao.UserDao" >
+  <resultMap id="UserResultMap" type="com.lj.redwine.pojo.User" >
+    <id column="user_id" property="user_id" jdbcType="INTEGER" />
+    <result column="username" property="username" jdbcType="VARCHAR" />
+    <result column="password" property="password" jdbcType="VARCHAR" />
+    <result column="avatar" property="avatar" jdbcType="VARCHAR" />
+    <result column="telephone" property="telephone" jdbcType="VARCHAR" />
+    
+    <!-- 映射到一个集合  表示多的一方-->  
+    <collection property="addressList" ofType="com.lj.redwine.pojo.Address">  
+    	<id property="address_id" column="address_id"/>  
+        <result property="consignee" column="consignee"/>  
+        <result property="gender" column="gender"/>
+        <result property="consignee_phone" column="consignee_phone"/>
+        <result property="location_address" column="location_address"/>
+        <result property="detail_address" column="detail_address"/>
+        <result column="user_delete" property="user_delete" />
+    </collection> 
+    
+    <collection property="favoritesList" ofType="com.lj.redwine.pojo.Favorites">  
+    	<id property="favorites_id" column="favorites_id"/>  
+    </collection> 
+    
+    <collection property="shoppingCartList" ofType="com.lj.redwine.pojo.ShoppingCart">  
+    	<id property="shopping_cart_id" column="shopping_cart_id"/>  
+    </collection> 
+    
+    <collection property="evaluationList" ofType="com.lj.redwine.pojo.Evaluation">  
+    	<id property="evaluation_id" column="evaluation_id"/>  
+    	<result property="content" column="content"/>
+        <result property="grade" column="grade"/>
+        <result property="evaluation_date" column="evaluation_date"/> 
+    </collection> 
+    
+    <collection property="ordersList" ofType="com.lj.redwine.pojo.Orders">  
+    	<id property="order_id" column="order_id"/>  
+    	<result property="order_time" column="order_time"/>
+        <result property="total_price" column="total_price"/>
+        <result column="deliver_method" property="deliver_method" jdbcType="VARCHAR" />
+    </collection> 
+  </resultMap>
+  	
+  	<!-- 查询手机号码是否存在 -->
+  	<select id="findTelephone" parameterType="string" resultType="com.lj.redwine.pojo.User">
+  		select telephone from user where telephone = #{telephone}
+  	</select>
+  	
+  	<!-- 查询用户名是否存在 -->
+  	<select id="findUsername" parameterType="string" resultType="com.lj.redwine.pojo.User">
+  		select username from user where username = #{username}
+  	</select>
+  	
+  	<!-- 根据账号查询user -->
+  	<select id="findUserByAccount" parameterType="Map" resultType="com.lj.redwine.pojo.User">
+  		select user_id,username,avatar,telephone from user where username = #{username} and password = #{password}
+  	</select>
+  	
+	<!-- 根据手机号码查询user --> 
+	<select id="findUserByTelephone" parameterType="string" resultType="com.lj.redwine.pojo.User">
+  		select user_id,username,avatar,telephone from user where telephone = #{telephone}
+  	</select>
+  	
+ 	<!-- 添加用户 -->
+ 	<insert id="addUser" parameterType="com.lj.redwine.pojo.User" useGeneratedKeys="true" keyProperty="id">
+  		insert into user (username,password,avatar,telephone) values(#{username},#{password},#{avatar},#{telephone})	
+ 	</insert>
+ 	
+ 	<!-- 查询所有用户 -->
+ 	<select id="findAllUser" resultType="com.lj.redwine.pojo.User"  resultMap="UserResultMap">
+ 		select user.* from user
+ 	</select>
+ 
+ 	<!-- 根据id查询用户 -->
+  	<select id="queryUserById" parameterType="int" resultType="com.lj.redwine.pojo.User">
+  		select user_id,username,avatar,telephone from user where user.user_id=#{id}
+  	</select>
+  	
+  	<!-- 更新用户信息 -->
+  	<update id="updateUser" parameterType="com.lj.redwine.pojo.User">
+  		update user set username=#{username},password=#{password},avatar=#{avatar},telephone=#{telephone} where user_id=#{user_id}
+  	</update>
+  	
+  	<!-- 更新用户名 -->
+  	<update id="updateUsername" parameterType="map">
+  		update user set username = #{username} where user_id = #{id}
+  	</update>
+  	
+  	<!-- 更新用户头像 -->
+  	<update id="updateUserAvatarById" parameterType="com.lj.redwine.pojo.User">
+  		update user set avatar = #{avatar} where user_id = #{user_id}
+  	</update>
+  	
+  	<!-- 删除用户 -->
+  	<delete id="deleteUser" parameterType="int">
+        delete from user where user_id=#{id}
+    </delete>
+    
+	<!-- 根据用户id查询地址 -->  
+    <select id="queryAddressByUserId" parameterType="int" resultMap="UserResultMap"> 
+    	select * from user u,address a where u.user_id=a.user_id and u.user_id=#{id}     
+    </select>  
+    
+    <!-- 根据用户id查询我的收藏 -->
+    <select id="queryCollectionByUserId" parameterType="int" resultMap="UserResultMap"> 
+    	select * from user u,collection c where u.user_id=c.user_id and u.user_id=#{id}     
+    </select>  
+    
+    <!-- 根据用户id查询我的酒评 -->
+    <select id="queryEvaluationByUserId" parameterType="int" resultMap="UserResultMap"> 
+    	select * from user u,evaluation e where u.user_id=e.user_id and u.user_id=#{id}     
+    </select>  
+    
+    <!-- 根据用户id查询订单 -->
+    <select id="queryOrdersByUserId" parameterType="int" resultMap="UserResultMap"> 
+    	select * from user u,orders o where u.user_id=o.user_id and u.user_id=#{id}     
+    </select>  
+</mapper>

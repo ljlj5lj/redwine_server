@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.lj.redwine.dao.OrdersDao" >
+  <resultMap id="OrdersResultMap" type="com.lj.redwine.pojo.Orders" >
+    <id column="order_id" property="order_id" jdbcType="INTEGER" />
+    <result column="order_time" property="order_time" jdbcType="TIMESTAMP" />
+    <result column="total_price" property="total_price" jdbcType="REAL" />
+	<result column="deliver_time" property="deliver_time" jdbcType="VARCHAR" />
+    <!-- 表示一的一方 -->  
+    <association property="user" javaType="com.lj.redwine.pojo.User">  
+    	<id property="user_id" column="user_id"/>  
+    	<result property="username" column="username"/>
+    	<result property="password" column="password"/>  
+    	<result property="avatar" column="avatar"/>  
+    	<result property="telephone" column="telephone"/>    
+    </association>  
+    <association property="order_status" javaType="com.lj.redwine.pojo.OrderStatus">
+    	<id column="order_status_id" property="order_status_id" />
+    	<result column="status_name" property="status_name" />
+    </association>
+    <association property="address" javaType="com.lj.redwine.pojo.Address">
+    	<id column="address_id" property="address_id" />
+    	<result column="consignee" property="consignee" jdbcType="VARCHAR" />
+    	<result column="gender" property="gender" jdbcType="CHAR" />
+    	<result column="consignee_phone" property="consignee_phone" jdbcType="VARCHAR" />
+    	<result column="location_address" property="location_address" jdbcType="VARCHAR" />
+    	<result column="detail_address" property="detail_address" jdbcType="VARCHAR" />
+    </association>
+    
+    <!-- 映射到一个集合  表示多的一方-->  
+    <collection property="orderItemList" ofType="com.lj.redwine.pojo.OrderItem">  
+    	<id column="order_item_id" property="order_item_id" />
+    	<result column="quantity" property="quantity" />
+    	<result column="redwine_id" property="redwine_id" />
+    	<result column="order_id" property="order_id" />
+    	<association property="redwine" javaType="com.lj.redwine.pojo.Redwine">
+    		    <id column="redwine_id" property="redwine_id" jdbcType="INTEGER" />
+    			<result column="price" property="price" jdbcType="REAL" />
+    			<result column="redwine_name" property="redwine_name" jdbcType="VARCHAR" />
+    			<result column="description" property="description" jdbcType="VARCHAR" />
+    			<result column="introduction" property="introduction" jdbcType="VARCHAR" />
+    			<result column="origin" property="origin" jdbcType="VARCHAR" />
+    			<result column="vintage" property="vintage" jdbcType="INTEGER" />
+   		 		<result column="alcohol" property="alcohol" jdbcType="REAL" />
+    			<result column="capacity" property="capacity" jdbcType="INTEGER" />
+    			<result column="picture" property="picture" jdbcType="VARCHAR" />
+    			<result column="register_date" property="register_date" jdbcType="TIMESTAMP" />
+    			<result column="sales" property="sales" jdbcType="INTEGER" />
+    	</association>
+    </collection> 
+  </resultMap>
+
+	<!-- 根据订单id查询用户 -->
+    <select id="queryUserByOrderId" parameterType="int" resultMap="OrdersResultMap"> 
+    	select * from user u,orders o where u.user_id=o.user_id and o.user_id=#{id}     
+    </select>  
+    
+    <!-- 根据订单id查询子订单 -->
+  	<select id="queryOrderItemByOrderId" parameterType="int" resultMap="OrdersResultMap" resultType="com.lj.redwine.pojo.Orders"> 
+  		select * from orders o,order_item oi 
+  		inner join redwine r on oi.redwine_id = r.redwine_id
+  		where o.order_id = oi.order_id and o.order_id = #{id}
+  	</select>
+  	
+  	<!-- 根据用户id查询订单 -->
+  	<select id="queryOrderByUserId" parameterType="map" resultMap="OrdersResultMap" resultType="com.lj.redwine.pojo.Orders"> 
+  		select * from orders o
+  		inner join order_status os on o.order_status_id = os.order_status_id
+  		where o.user_id = #{user_id} order by o.order_time desc limit #{id},3
+  	</select>
+  	
+    <!-- 根据订单id订单状态-->  
+  	<select id="queryOrderStatusByOrderId" parameterType="int" resultMap="OrdersResultMap"> 
+  		select * from order_status os,orders o where os.order_status_id=o.order_status_id and o.order_status_id=#{id}   
+  	</select>  
+
+	<!-- 添加订单 -->
+  	<insert id="addOrders" parameterType="com.lj.redwine.pojo.Orders" useGeneratedKeys="true" keyProperty="id">
+    	insert into orders (order_time, total_price,order_status_id, user_id, address_id, deliver_time) values (
+    	#{order_time}, #{total_price}, #{order_status_id}, #{user_id}, #{address_id}, #{deliver_time})
+    	<selectKey keyProperty="order_id" resultType="int" order="AFTER">
+			select LAST_INSERT_ID()
+		</selectKey>
+  	</insert>
+  	
+  	<!-- 根据id查询订单(内查询) -->
+  	<select id="queryOrdersById" parameterType="int" resultType="com.lj.redwine.pojo.Orders">
+  		select * from orders o
+  		inner join user u on o.user_id = u.user_id
+  		inner join order_status os on o.order_status_id = os.order_status_id
+  		where o.order_id = #{id}
+  	</select>
+  	
+  	<!-- 查询所有我的收藏 -->
+ 	<select id="findAllOrders" resultType="com.lj.redwine.pojo.Orders" resultMap="OrdersResultMap">
+ 		select * from orders o
+  		inner join user u on o.user_id = u.user_id
+  		inner join order_status os on o.order_status_id = os.order_status_id
+ 	</select>
+
+	<!-- 删除订单 -->
+  	<delete id="deleteOrders" parameterType="int">
+        delete from orders where order_id=#{id}
+    </delete>
+    
+    <!-- 撤销订单 -->
+    <update id="removeOrders" parameterType="com.lj.redwine.pojo.Orders">
+    	update orders set order_status_id = 4 where order_id = #{id}
+    </update>
+
+</mapper>
